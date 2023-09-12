@@ -1,54 +1,47 @@
-from datetime import date, timedelta, datetime 
-
+from datetime import date, datetime, timedelta
 
 
 def get_birthdays_per_week(users):
-    # Створюємо порожні списки для кожного дня тижня
-    users = {
-        'Monday': [],
-        'Tuesday': [],
-        'Wednesday': [],
-        'Thursday': [],
-        'Friday': []
+    birthdays = {"Monday": [], "Tuesday": [], "Wednesday": [], "Thursday": [], "Friday": []}
+    days_name = {
+        0: "Monday",
+        1: "Tuesday",
+        2: "Wednesday",
+        3: "Thursday",
+        4: "Friday",
+        5: "Monday",
+        6: "Monday",
     }
 
-    if not users:
-        return users
-
-    # Отримуємо сьогоднішню дату
     current_date = date.today()
+    # Початкова дата перевірки 
+    delta = timedelta(days=6)
+    end_of_week = current_date + delta
+    # Кінцева дата перевірки 
+    current_year = current_date.year
+    current_month = current_date.month
 
-    # Знаходимо номер поточного дня тижня (0 - понеділок, 1 - вівторок, ..., 6 - неділя)
-    current_weekday = current_date.weekday()
-
-    # Знаходимо різницю між поточним днем тижня і понеділком (переводимо на поточний день)
-    days_until_monday = (current_weekday - 1) % 7  # Змінено з (current_weekday + 1) % 7
-
-    # Знаходимо дату наступного понеділка
-    next_monday = current_date + timedelta(days=days_until_monday)
-
-    # Знаходимо дату наступної неділі
-    next_sunday = next_monday + timedelta(days=6)
-
-    # Перевіряємо, чи є користувачі з днями народження у наступному тижні
+    # Перевіряємо, чи є користувачі з днями народження у наступному тижні та чи минув у цьому році
     for user in users:
-        name = user['name']
-        birthday = user['birthday']
+        birthday = user["birthday"]
+        if current_month == 12 and birthday.month == 1:
+            birthday_to_check = birthday.replace(year=current_year + 1)
+        else:
+            birthday_to_check = birthday.replace(year=current_year)
 
-         # Перевірка, чи день народження вже минув у поточному році
-        if birthday < current_date:
-            # Додаємо 1 рік до дати народження
-            birthday = birthday.replace(year=current_date.year + 1)
+        if current_date <= birthday_to_check <= end_of_week:
+            name_of_the_day = days_name[birthday_to_check.weekday()]
+            birthdays[name_of_the_day].append(user["name"])
+        else:
+            continue
 
-        if next_monday <= birthday <= next_sunday:
-            # Отримуємо день тижня для дня народження
-            birthday_weekday = birthday.strftime('%A')
+    # Перевірка на пустий список
+    clean_list_of_birthdays = {}
+    for key, value in birthdays.items():
+        if len(value) > 0:
+            clean_list_of_birthdays[key] = value
 
-
-        # Додаємо ім'я користувача до відповідного дня тижня
-        users[birthday_weekday].append(name)
-
-    return users
+    return clean_list_of_birthdays
 
 
 if __name__ == "__main__":
